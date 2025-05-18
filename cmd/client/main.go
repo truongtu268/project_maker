@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/user-management/config"
-	pb "github.com/user-management/proto/user"
+	"github.com/truongtu268/project_maker/config"
+	pb "github.com/truongtu268/project_maker/proto/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

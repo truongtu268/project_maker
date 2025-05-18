@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/user-management/internal/domain/user"
+	"github.com/truongtu268/project_maker/internal/domain/user"
 )
 
 // Common repository errors
