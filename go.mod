@@ -1,8 +1,6 @@
 module github.com/truongtu268/project_maker
 
-go 1.22.0
-
-toolchain go1.22.2
+go 1.23.8
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.16.2

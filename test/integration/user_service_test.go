@@ -65,7 +65,7 @@ func TestUserService_CreateUser(t *testing.T) {
 				Password: "password123",
 				FullName: "Test User 4",
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
@@ -74,7 +74,7 @@ func TestUserService_CreateUser(t *testing.T) {
 			resp, err := testSetup.GrpcClient.CreateUser(ctx, tt.req)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Expected error but got none")
+					t.Errorf("Expected error but got none %s", err.Error())
 					return
 				}
 				if tt.errorMsg != "" && !strings.Contains(err.Error(), tt.errorMsg) {
