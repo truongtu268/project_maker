@@ -94,5 +94,13 @@ docker-logs:
 db-shell:
 	docker exec -it $$(docker-compose ps -q postgres) psql -U postgres -d user_management
 
+# Run unit tests
+test:
+	$(GOCMD) test -v ./...
+
+# Run integration tests
+test-integration:
+	$(GOCMD) test -v ./test/integration/...
+
 # Default target
 all: proto build 

@@ -150,6 +150,34 @@ make migrate-down # Rollback the last migration
 make db-shell
 ```
 
+## Testing
+
+### Running Integration Tests
+
+Integration tests verify the functionality of the entire system, including the gRPC API, service layer, and database interactions. They use Docker to spin up a PostgreSQL container for testing.
+
+Prerequisites:
+- Docker must be running on your system
+
+To run the integration tests:
+
+```
+make test-integration
+```
+
+Or use the provided script:
+
+```
+./scripts/run_integration_tests.sh
+```
+
+The tests will:
+1. Start a PostgreSQL container
+2. Run migrations to set up the database schema
+3. Start a gRPC server with an in-memory connection
+4. Run tests against all user service methods
+5. Clean up resources when done
+
 ## License
 
 MIT 

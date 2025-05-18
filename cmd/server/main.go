@@ -71,18 +71,17 @@ func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserR
 // UpdateUser implements the UpdateUser RPC method
 func (s *server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
 	var username, email, password, fullName *string
-
-	if req.Username != "" {
-		username = &req.Username
+	if req.Username != nil && *req.Username != "" {
+		username = req.Username
 	}
-	if req.Email != "" {
-		email = &req.Email
+	if req.Email != nil && *req.Email != "" {
+		email = req.Email
 	}
-	if req.Password != "" {
-		password = &req.Password
+	if req.Password != nil && *req.Password != "" {
+		password = req.Password
 	}
-	if req.FullName != "" {
-		fullName = &req.FullName
+	if req.FullName != nil && *req.FullName != "" {
+		fullName = req.FullName
 	}
 
 	user, err := s.userService.UpdateUser(ctx, req.Id, username, email, password, fullName)

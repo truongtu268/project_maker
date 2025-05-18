@@ -153,10 +153,10 @@ func getUser(ctx context.Context, client pb.UserServiceClient, id int64) {
 func updateUser(ctx context.Context, client pb.UserServiceClient, id int64, username, email, password, fullName string) {
 	resp, err := client.UpdateUser(ctx, &pb.UpdateUserRequest{
 		Id:       id,
-		Username: username,
-		Email:    email,
-		Password: password,
-		FullName: fullName,
+		Username: &username,
+		Email:    &email,
+		Password: &password,
+		FullName: &fullName,
 	})
 	if err != nil {
 		log.Fatalf("Could not update user: %v", err)
