@@ -4,7 +4,8 @@ A complete user management system built with Go, gRPC, and PostgreSQL.
 
 ## Features
 
-- User CRUD operations via gRPC
+- User CRUD operations via gRPC and REST API
+- REST API with OpenAPI/Swagger documentation
 - PostgreSQL database with migrations
 - Docker and Docker Compose support
 - Command-line client for testing
@@ -71,6 +72,35 @@ make migrate-up
 
 ```
 make run-server
+```
+
+The server will start:
+- gRPC server on port 50051
+- REST API server on port 8080
+
+## API Endpoints
+
+The service provides both gRPC and REST API interfaces:
+
+### REST API Endpoints
+
+| Method | Endpoint             | Description                 |
+|--------|----------------------|-----------------------------|
+| POST   | /api/v1/users        | Create a new user           |
+| GET    | /api/v1/users/{id}   | Get a user by ID            |
+| PATCH  | /api/v1/users/{id}   | Update a user               |
+| DELETE | /api/v1/users/{id}   | Delete a user               |
+| GET    | /api/v1/users        | List users with pagination  |
+
+### API Documentation
+
+Once the server is running, you can access the OpenAPI/Swagger documentation at:
+```
+# OpenAPI JSON Schema
+http://localhost:8080/swagger/user.swagger.json
+
+# Swagger UI
+http://localhost:8080/swagger-ui/
 ```
 
 ## Using the Client

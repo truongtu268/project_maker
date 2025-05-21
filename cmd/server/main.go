@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/truongtu268/project_maker/config"
@@ -18,6 +23,7 @@ import (
 	"github.com/truongtu268/project_maker/internal/service"
 	pb "github.com/truongtu268/project_maker/proto/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -71,6 +77,7 @@ func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserR
 // UpdateUser implements the UpdateUser RPC method
 func (s *server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
 	var username, email, password, fullName *string
+
 	if req.Username != nil && *req.Username != "" {
 		username = req.Username
 	}
@@ -144,6 +151,37 @@ func (s *server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.L
 	}, nil
 }
 
+// Custom logger middleware for HTTP requests
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf(
+			"[%s] %s %s %s",
+			r.Method,
+			r.RequestURI,
+			r.RemoteAddr,
+			time.Since(start),
+		)
+	})
+}
+
+// CORS middleware
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func runMigrations(db *sql.DB, cfg *config.Config) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
@@ -165,6 +203,72 @@ func runMigrations(db *sql.DB, cfg *config.Config) error {
 	}
 
 	return nil
+}
+
+func startGRPCServer(cfg *config.Config, userService *service.UserService) (*grpc.Server, net.Listener, error) {
+	// Start gRPC server
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.GRPCPort))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterUserServiceServer(grpcServer, &server{userService: userService})
+
+	// Register reflection service on gRPC server for easier testing with grpcurl
+	reflection.Register(grpcServer)
+
+	go func() {
+		log.Printf("Starting gRPC server on %s:%d", cfg.Server.Host, cfg.Server.GRPCPort)
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to serve gRPC: %v", err)
+		}
+	}()
+
+	return grpcServer, lis, nil
+}
+
+func startHTTPServer(ctx context.Context, cfg *config.Config) (*http.Server, error) {
+	mux := runtime.NewServeMux()
+
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := pb.RegisterUserServiceHandlerFromEndpoint(
+		ctx,
+		mux,
+		fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.GRPCPort),
+		opts,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a custom HTTP router
+	httpMux := http.NewServeMux()
+
+	// Add the gRPC-Gateway mux to handle API requests
+	httpMux.Handle("/api/", loggingMiddleware(corsMiddleware(mux)))
+
+	// Add Swagger UI handler for API documentation
+	httpMux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir("./third_party/OpenAPI/proto"))))
+
+	// Add Swagger UI
+	httpMux.Handle("/swagger-ui/", http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("./third_party/swagger-ui"))))
+
+	// Create a new HTTP server
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.HTTPPort),
+		Handler: httpMux,
+	}
+
+	// Start the HTTP server
+	go func() {
+		log.Printf("Starting HTTP server on %s:%d", cfg.Server.Host, cfg.Server.HTTPPort)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("HTTP server error: %v", err)
+		}
+	}()
+
+	return httpServer, nil
 }
 
 func main() {
@@ -190,20 +294,39 @@ func main() {
 	userRepo := repository.NewPostgresUserRepository(dbx)
 	userService := service.NewUserService(userRepo)
 
+	// Create a context that can be canceled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// Start gRPC server
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
+	grpcServer, _, err := startGRPCServer(cfg, userService)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatalf("Failed to start gRPC server: %v", err)
+	}
+	defer grpcServer.Stop()
+
+	// Start HTTP server with gRPC-Gateway
+	httpServer, err := startHTTPServer(ctx, cfg)
+	if err != nil {
+		log.Fatalf("Failed to start HTTP server: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(grpcServer, &server{userService: userService})
+	// Handle graceful shutdown
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	// Register reflection service on gRPC server for easier testing with grpcurl
-	reflection.Register(grpcServer)
+	<-sigCh
+	log.Println("Received shutdown signal")
 
-	log.Printf("Starting gRPC server on %s:%d", cfg.Server.Host, cfg.Server.Port)
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+	// Gracefully stop the HTTP server
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Printf("HTTP server shutdown error: %v", err)
 	}
+
+	// Stop the gRPC server
+	grpcServer.GracefulStop()
+	log.Println("Servers shutdown completed")
 }

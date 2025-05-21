@@ -14,8 +14,9 @@ type Config struct {
 
 // ServerConfig holds all the server-related configuration
 type ServerConfig struct {
-	Port int
-	Host string
+	GRPCPort int
+	HTTPPort int
+	Host     string
 }
 
 // DatabaseConfig holds all the database-related configuration
@@ -40,8 +41,9 @@ func (dc *DatabaseConfig) DSN() string {
 func New() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnvAsInt("SERVER_PORT", 50051),
-			Host: getEnv("SERVER_HOST", "0.0.0.0"),
+			GRPCPort: getEnvAsInt("GRPC_PORT", 50051),
+			HTTPPort: getEnvAsInt("HTTP_PORT", 8080),
+			Host:     getEnv("SERVER_HOST", "0.0.0.0"),
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

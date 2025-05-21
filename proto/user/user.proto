@@ -2,14 +2,54 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "github.com/user-management/proto/user";
+option go_package = "github.com/truongtu268/project_maker/proto/user";
+
+import "third_party/google/api/annotations.proto";
+import "third_party/protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "User Management API";
+    version: "1.0";
+    contact: {
+      name: "User Management";
+      url: "https://github.com/truongtu268/project_maker";
+    };
+  };
+};
 
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (UserResponse) {}
-  rpc GetUser(GetUserRequest) returns (UserResponse) {}
-  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {}
-  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/users"
+      body: "*"
+    };
+  }
+  
+  rpc GetUser(GetUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/users/{id}"
+    };
+  }
+  
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/users/{id}"
+      body: "*"
+    };
+  }
+  
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/users/{id}"
+    };
+  }
+  
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/users"
+    };
+  }
 }
 
 message User {

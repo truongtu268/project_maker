@@ -49,7 +49,7 @@ func main() {
 	cfg := config.New()
 
 	// Set up a connection to the server
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.GRPCPort),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
