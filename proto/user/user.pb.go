@@ -7,7 +7,7 @@
 package user
 
 import (
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -535,7 +535,7 @@ var File_proto_user_user_proto protoreflect.FileDescriptor
 
 const file_proto_user_user_proto_rawDesc = "" +
 	"\n" +
-	"\x15proto/user/user.proto\x12\x04user\x1a(third_party/google/api/annotations.proto\x1a:third_party/protoc-gen-openapiv2/options/annotations.proto\"\xa3\x01\n" +
+	"\x15proto/user/user.proto\x12\x04user\x1a(third_party/google/api/annotations.proto\x1a#third_party/validate/validate.proto\"\xa3\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -544,35 +544,35 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"~\n" +
-	"\x11CreateUserRequest\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\x12\x14\n" +
-	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1b\n" +
-	"\tfull_name\x18\x04 \x01(\tR\bfullName\" \n" +
-	"\x0eGetUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"\xd4\x01\n" +
-	"\x11UpdateUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1f\n" +
-	"\busername\x18\x02 \x01(\tH\x00R\busername\x88\x01\x01\x12\x19\n" +
-	"\x05email\x18\x03 \x01(\tH\x01R\x05email\x88\x01\x01\x12\x1f\n" +
-	"\bpassword\x18\x04 \x01(\tH\x02R\bpassword\x88\x01\x01\x12 \n" +
-	"\tfull_name\x18\x05 \x01(\tH\x03R\bfullName\x88\x01\x01B\v\n" +
+	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\xd5\x01\n" +
+	"\x11CreateUserRequest\x126\n" +
+	"\busername\x18\x01 \x01(\tB\x1a\xfaB\x17r\x15\x10\x03\x1822\x0f^[a-zA-Z0-9_]+$R\busername\x12!\n" +
+	"\x05email\x18\x02 \x01(\tB\v\xfaB\br\x06\x10\x05\x18d`\x01R\x05email\x12=\n" +
+	"\bpassword\x18\x03 \x01(\tB!\xfaB\x1er\x1c\x10\b\x18d2\x16^[A-Za-z0-9@$!%*#?&]+$R\bpassword\x12&\n" +
+	"\tfull_name\x18\x04 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\bfullName\")\n" +
+	"\x0eGetUserRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\"\xc0\x02\n" +
+	"\x11UpdateUserRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\x12>\n" +
+	"\busername\x18\x02 \x01(\tB\x1d\xfaB\x1ar\x18\x10\x03\x1822\x0f^[a-zA-Z0-9_]+$\xd0\x01\x01H\x00R\busername\x88\x01\x01\x12)\n" +
+	"\x05email\x18\x03 \x01(\tB\x0e\xfaB\vr\t\x10\x05\x18d\xd0\x01\x01`\x01H\x01R\x05email\x88\x01\x01\x12E\n" +
+	"\bpassword\x18\x04 \x01(\tB$\xfaB!r\x1f\x10\b\x18d2\x16^[A-Za-z0-9@$!%*#?&]+$\xd0\x01\x01H\x02R\bpassword\x88\x01\x01\x12.\n" +
+	"\tfull_name\x18\x05 \x01(\tB\f\xfaB\tr\a\x10\x01\x18d\xd0\x01\x01H\x03R\bfullName\x88\x01\x01B\v\n" +
 	"\t_usernameB\b\n" +
 	"\x06_emailB\v\n" +
 	"\t_passwordB\f\n" +
 	"\n" +
-	"_full_name\"#\n" +
-	"\x11DeleteUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\".\n" +
+	"_full_name\",\n" +
+	"\x11DeleteUserRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x02id\".\n" +
 	"\x12DeleteUserResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\".\n" +
 	"\fUserResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
-	".user.UserR\x04user\"C\n" +
-	"\x10ListUsersRequest\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"V\n" +
+	".user.UserR\x04user\"W\n" +
+	"\x10ListUsersRequest\x12\x1b\n" +
+	"\x04page\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x04page\x12&\n" +
+	"\tpage_size\x18\x02 \x01(\x05B\t\xfaB\x06\x1a\x04\x18d \x00R\bpageSize\"V\n" +
 	"\x11ListUsersResponse\x12 \n" +
 	"\x05users\x18\x01 \x03(\v2\n" +
 	".user.UserR\x05users\x12\x1f\n" +
@@ -586,9 +586,7 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"UpdateUser\x12\x17.user.UpdateUserRequest\x1a\x12.user.UserResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*2\x12/api/v1/users/{id}\x12[\n" +
 	"\n" +
 	"DeleteUser\x12\x17.user.DeleteUserRequest\x1a\x18.user.DeleteUserResponse\"\x1a\x82\xd3\xe4\x93\x02\x14*\x12/api/v1/users/{id}\x12S\n" +
-	"\tListUsers\x12\x16.user.ListUsersRequest\x1a\x17.user.ListUsersResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/usersB\x91\x01\x92A]\x12[\n" +
-	"\x13User Management API\"?\n" +
-	"\x0fUser Management\x12,https://github.com/truongtu268/project_maker2\x031.0Z/github.com/truongtu268/project_maker/proto/userb\x06proto3"
+	"\tListUsers\x12\x16.user.ListUsersRequest\x1a\x17.user.ListUsersResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/api/v1/usersB1Z/github.com/truongtu268/project_maker/proto/userb\x06proto3"
 
 var (
 	file_proto_user_user_proto_rawDescOnce sync.Once

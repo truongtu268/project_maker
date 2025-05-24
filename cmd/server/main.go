@@ -23,8 +23,10 @@ import (
 	"github.com/truongtu268/project_maker/internal/service"
 	pb "github.com/truongtu268/project_maker/proto/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 // server is the gRPC server implementation
@@ -35,6 +37,11 @@ type server struct {
 
 // CreateUser implements the CreateUser RPC method
 func (s *server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserResponse, error) {
+	// Validate the request
+	if err := req.Validate(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	user, err := s.userService.CreateUser(ctx, req.Username, req.Email, req.Password, req.FullName)
 	if err != nil {
 		return nil, err
@@ -54,10 +61,15 @@ func (s *server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 
 // GetUser implements the GetUser RPC method
 func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserResponse, error) {
+	// Validate the request
+	if err := req.Validate(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	user, err := s.userService.GetUser(ctx, req.Id)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			return nil, fmt.Errorf("user not found with ID %d", req.Id)
+			return nil, status.Errorf(codes.NotFound, "user not found with ID %d", req.Id)
 		}
 		return nil, err
 	}
@@ -76,6 +88,11 @@ func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserR
 
 // UpdateUser implements the UpdateUser RPC method
 func (s *server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
+	// Validate the request
+	if err := req.Validate(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	var username, email, password, fullName *string
 
 	if req.Username != nil && *req.Username != "" {
@@ -94,7 +111,7 @@ func (s *server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 	user, err := s.userService.UpdateUser(ctx, req.Id, username, email, password, fullName)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			return nil, fmt.Errorf("user not found with ID %d", req.Id)
+			return nil, status.Errorf(codes.NotFound, "user not found with ID %d", req.Id)
 		}
 		return nil, err
 	}
@@ -113,10 +130,15 @@ func (s *server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 
 // DeleteUser implements the DeleteUser RPC method
 func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+	// Validate the request
+	if err := req.Validate(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	err := s.userService.DeleteUser(ctx, req.Id)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			return nil, fmt.Errorf("user not found with ID %d", req.Id)
+			return nil, status.Errorf(codes.NotFound, "user not found with ID %d", req.Id)
 		}
 		return nil, err
 	}
@@ -128,6 +150,11 @@ func (s *server) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb
 
 // ListUsers implements the ListUsers RPC method
 func (s *server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
+	// Validate the request
+	if err := req.Validate(); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	users, total, err := s.userService.ListUsers(ctx, int(req.Page), int(req.PageSize))
 	if err != nil {
 		return nil, err
@@ -247,12 +274,6 @@ func startHTTPServer(ctx context.Context, cfg *config.Config) (*http.Server, err
 
 	// Add the gRPC-Gateway mux to handle API requests
 	httpMux.Handle("/api/", loggingMiddleware(corsMiddleware(mux)))
-
-	// Add Swagger UI handler for API documentation
-	httpMux.Handle("/swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir("./third_party/OpenAPI/proto"))))
-
-	// Add Swagger UI
-	httpMux.Handle("/swagger-ui/", http.StripPrefix("/swagger-ui/", http.FileServer(http.Dir("./third_party/swagger-ui"))))
 
 	// Create a new HTTP server
 	httpServer := &http.Server{

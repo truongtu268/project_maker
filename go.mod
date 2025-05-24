@@ -5,6 +5,7 @@ go 1.23.0
 toolchain go1.23.9
 
 require (
+	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/jmoiron/sqlx v1.4.0

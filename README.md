@@ -92,17 +92,6 @@ The service provides both gRPC and REST API interfaces:
 | DELETE | /api/v1/users/{id}   | Delete a user               |
 | GET    | /api/v1/users        | List users with pagination  |
 
-### API Documentation
-
-Once the server is running, you can access the OpenAPI/Swagger documentation at:
-```
-# OpenAPI JSON Schema
-http://localhost:8080/swagger/user.swagger.json
-
-# Swagger UI
-http://localhost:8080/swagger-ui/
-```
-
 ## Using the Client
 
 The client supports several commands for interacting with the user management service:
